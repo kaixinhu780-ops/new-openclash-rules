@@ -30,13 +30,13 @@ Muse 使用仓库原范围：`muse.ai`、`meta.ai`、`metaaivm.com`、精确 `au
 
 两者规则条件、顺序、策略目标和组筛选语义已逐项比对。公开 INI 用转换时提供的订阅节点替代私有 `proxy-providers`；节点数量、实际名称、缓存和提供者刷新参数取决于使用者的转换环境，不能称为字节级相同的完整配置。
 
-原 YAML 两个 domain MRS 规则源，在 INI 中使用同仓库同名 YAML 版本及 `clash-domain:`，以兼容订阅转换器；classical 源使用 `clash-classic:`。本轮没有重新解码验证远程 MRS 与 YAML 在每个更新时刻完全一致。Muse规则集从旧库固定历史版本原样复制到本仓库 `rules/MuseMeta.yaml`，内容校验一致；本地完整YAML和公开INI均引用本仓库。
+原 YAML 两个 domain MRS 规则源，在 INI 中使用同仓库同名 YAML 版本及 `clash-domain:`，以兼容订阅转换器；classical 源使用 `clash-classic:`。本轮没有重新解码验证远程 MRS 与 YAML 在每个更新时刻完全一致。Muse规则集从旧库固定历史版本原样复制到本仓库 `rules/MuseMeta.yaml`，原有555条保持一致，另增加两条官网已确认的精确域名；本地完整YAML和公开INI均引用本仓库。
 
 公开 INI 不含 DNS/IPv6/TUN/嗅探基础配置；本地副本也未擅自补写原文件没有的字段。实际运行由导入环境/OpenClash配置决定，不能仅凭文件缺字段认定开启、关闭或泄漏。
 
 ## 验证与运行边界
 
-已通过 YAML 解析、65组引用闭包及无循环、93条规则顺序与重复检查、Siri11条一致性、代表域名首个命中、公私产物关键语义对等、原提供者及所有原组不变、私密字段未出现在公开模板等检查。原文件、旧主模板和旧变更记录的摘要保持不变。
+已通过 YAML 解析、65组引用闭包及无循环、97条规则顺序与重复检查、Siri11条一致性、代表域名首个命中、公私产物关键语义对等、原提供者及所有原组不变、私密字段未出现在公开模板等检查。原文件、旧主模板和旧变更记录的摘要保持不变。
 
 本机未发现现成 Mihomo/Clash 可执行文件，未执行核心 `-t` 校验；没有加载远程节点、探测真实节点、导入路由器或做设备验收。美国筛选无候选时，显式 REJECT 避免此专用组被静态转换器空填为 DIRECT；实际节点匹配、核心版本与 provider 加载仍需运行确认。
 
@@ -48,8 +48,37 @@ Mihomo 在所选代理不支持 UDP 时可能继续向下匹配。Muse 保留配
 
 ## Muse规则集与绑定
 
-公开规则文件：[rules/MuseMeta.yaml](rules/MuseMeta.yaml)，555条规则，其中包含 `DOMAIN-SUFFIX,muse.ai`；它同时含广义Meta/社交共享域名，不是纯muse.ai清单。源为旧仓库固定提交 `b205160f6046e5079e6ac8dbebbeedefcf5640e3`，此次按原内容复制。
+公开规则文件：[rules/MuseMeta.yaml](rules/MuseMeta.yaml)，557条规则，其中包含 `DOMAIN-SUFFIX,muse.ai`；它同时含广义Meta/社交共享域名，不是纯muse.ai清单。源为旧仓库固定提交 `b205160f6046e5079e6ac8dbebbeedefcf5640e3`，原有555条按原内容复制，本次新增两条精确DOMAIN。
 
 本地YAML的rule-provider名为 `Migrated_MuseMeta`，绑定 `RULE-SET,Migrated_MuseMeta,🔒 Muse 固定出口` 及随后的REJECT；公开INI将同一URL以clash-classic绑定到相同策略组和REJECT。muse.ai、meta.ai、metaaivm.com、auth.meta.com更早命中显式规则。
 
 规则绑定静态核对通过不代表已在路由器生效；默认REJECT，需先手动选具体美国节点。
+
+## 2026-10-25：补充已核实的Muse隐私传输域名
+
+新增精确主机（不扩大Fastly整域）：
+
+- `meta-ohttp-config-prod.fastly-edge.com`：官网代码的隐私传输配置GET目标。
+- `meta-ohttp-relay-prod.fastly-edge.com`：官网代码的隐私传输中继POST目标。
+
+第一方依据：Muse官网脚本 `/_next/static/chunks/1ki_d1mm7ejkg.js` 中的 `getHatchPrivacyTransportEndpoints`；第三方佐证：[ck629规则](https://github.com/ck629/Rules/blob/e25c1436ea826a79067b68cd52b3cb736c85eb57/Shadowrocket.conf#L51)。静态代码声明不等于已经观察到用户请求或证明此前故障原因。
+
+Muse规则集新增2条，现557条；本地完整YAML与INI各新增4条（每个主机的固定出口及配套REJECT），现97条，均先于通用规则。显式规则也避免导入时旧provider缓存暂未刷新导致这两个目标先漏入通用路由。
+
+`production.museai.com`只是原生SSO可接受来源的条件候选；Sentry等是可选共享统计，证据不足以当核心必需项，本次均未加入。
+
+### OpenClash应该使用哪个地址
+
+1. **自定义规则集 / rule-providers**：使用下方Muse YAML片段，`behavior: classical`、`format: yaml`，绑定到已有的Muse固定出口组；它不是完整节点配置。新模板已经配置该绑定，无需重复添加。若用其他配置，需自行确保该组存在，并在通用规则前引用。
+
+```text
+https://raw.githubusercontent.com/kaixinhu780-ops/new-openclash-rules/main/rules/MuseMeta.yaml
+```
+
+对应规则：`RULE-SET,Migrated_MuseMeta,🔒 Muse 固定出口`，后接同规则集的REJECT保护。实际OpenClash界面若替换provider名称，应同步规则中的名称。
+
+2. **在线订阅转换的远程配置**：使用 `test1-merged-groups.ini`；自己的私密订阅另填，不能把规则YAML片段填成完整配置订阅。
+
+3. **完整配置模板**：[test1-merged-groups.template.yaml](test1-merged-groups.template.yaml)。这是安全公开版，所有节点订阅URL为空，不带私密headers/override或内嵌节点；必须下载后本地填有效订阅，不能直接拉取就宣称可联网。本地Downloads完整副本保留原私有提供者，绝不上传。
+
+三份公开产物与本地副本的规则/分组绑定已核对。仍未执行路由器更新、设备实测、节点加载或UDP端到端验证；GitHub发布不代表路由器自动加载。回退本次两个主机可撤销本提交并发布，但仍需路由器更新对应配置/规则集。

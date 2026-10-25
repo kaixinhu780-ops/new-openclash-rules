@@ -558,3 +558,6 @@ payload:
   - "DOMAIN-SUFFIX,yogalayout.com"
   - "DOMAIN-SUFFIX,zuckerberg.com"
   - "DOMAIN-SUFFIX,zuckerberg.net"
+# 2026-10-25: exact hosts declared by Muse getHatchPrivacyTransportEndpoints.
+  - DOMAIN,meta-ohttp-config-prod.fastly-edge.com
+  - DOMAIN,meta-ohttp-relay-prod.fastly-edge.com
